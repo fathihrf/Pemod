@@ -121,21 +121,30 @@ class LinearRegressionSGD:
 model = LinearRegressionSGD(lr=0.05, epochs=900, batch_size=32, optimizer="adam")
 model.fit(X_train, y_train)
 
-# Plot training loss
-plt.figure(figsize=(8, 4))
-plt.plot(model.train_losses, label="Training MSE")
-plt.xlabel("Epoch")
-plt.ylabel("MSE")
-plt.title("Training Loss Over Epochs")
-plt.legend()
-plt.tight_layout()
-plt.show()
-
 # Evaluate
 y_train_pred = model.predict(X_train)
 y_test_pred = model.predict(X_test)
 train_mse = mse(y_train, y_train_pred)
 test_mse = mse(y_test, y_test_pred)
+
+# Only plot points where both actual and predicted age > 0
+mask = (y_test > 0) & (y_test_pred > 0)
+y_test_pos = y_test[mask]
+y_test_pred_pos = y_test_pred[mask]
+
+plt.figure(figsize=(8, 5))
+plt.scatter(y_test_pos, y_test_pred_pos, alpha=0.7, label="Test Data")
+# Regression line (y = x)
+if len(y_test_pos) > 0 and len(y_test_pred_pos) > 0:
+    min_age = min(y_test_pos.min(), y_test_pred_pos.min())
+    max_age = max(y_test_pos.max(), y_test_pred_pos.max())
+    plt.plot([min_age, max_age], [min_age, max_age], color='red', linestyle='--', label="Ideal Fit (y=x)")
+plt.xlabel("Actual Age of Marriage")
+plt.ylabel("Predicted Age of Marriage")
+plt.title("Actual vs Predicted Age of Marriage (Test Set, Age > 0)")
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 print(f"Train MSE: {train_mse:.4f}")
 print(f"Test MSE: {test_mse:.4f}")
